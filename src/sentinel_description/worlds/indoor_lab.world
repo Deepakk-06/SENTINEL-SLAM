@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="indoor_lab">
+    <plugin name="gazebo_ros_init" filename="libgazebo_ros_init.so"/>
+    <plugin name="gazebo_ros_factory" filename="libgazebo_ros_factory.so"/>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <model name="north_wall">
+      <static>true</static>
+      <pose>0 4 0.5 0 0 0</pose>
+      <link name="wall">
+        <collision name="collision"><geometry><box><size>8 0.12 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8 0.12 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+    <model name="south_wall">
+      <static>true</static>
+      <pose>0 -4 0.5 0 0 0</pose>
+      <link name="wall">
+        <collision name="collision"><geometry><box><size>8 0.12 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>8 0.12 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+    <model name="east_wall">
+      <static>true</static>
+      <pose>4 0 0.5 0 0 0</pose>
+      <link name="wall">
+        <collision name="collision"><geometry><box><size>0.12 8 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.12 8 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+    <model name="west_wall">
+      <static>true</static>
+      <pose>-4 0 0.5 0 0 0</pose>
+      <link name="wall">
+        <collision name="collision"><geometry><box><size>0.12 8 1.0</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.12 8 1.0</size></box></geometry></visual>
+      </link>
+    </model>
+
+    <model name="shelf_a">
+      <static>true</static>
+      <pose>-1.6 1.1 0.45 0 0 0.25</pose>
+      <link name="body">
+        <collision name="collision"><geometry><box><size>1.4 0.35 0.9</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.4 0.35 0.9</size></box></geometry></visual>
+      </link>
+    </model>
+    <model name="shelf_b">
+      <static>true</static>
+      <pose>1.5 -1.2 0.45 0 0 -0.45</pose>
+      <link name="body">
+        <collision name="collision"><geometry><box><size>1.2 0.4 0.9</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>1.2 0.4 0.9</size></box></geometry></visual>
+      </link>
+    </model>
+    <model name="center_column">
+      <static>true</static>
+      <pose>0.2 0.2 0.5 0 0 0</pose>
+      <link name="body">
+        <collision name="collision"><geometry><cylinder><radius>0.32</radius><length>1.0</length></cylinder></geometry></collision>
+        <visual name="visual"><geometry><cylinder><radius>0.32</radius><length>1.0</length></cylinder></geometry></visual>
+      </link>
+    </model>
+  </world>
+</sdf>
+
