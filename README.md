@@ -1,59 +1,74 @@
-# Sentinel SLAM Rover
+# SENTINEL-SLAM
 
-Original ROS 2 workspace for a differential-drive robot that can map, localize, navigate, and explore indoor spaces with a 2D LiDAR and IMU.
+Autonomous SLAM robot with real-time monocular depth vision.
 
-This project is intentionally structured as a clean-room implementation. It targets the same robotics problem as common SLAM rover projects, but uses its own package names, launch orchestration, robot model, autonomy nodes, parameters, and documentation.
+Built on a 3D-printed TurtleBot chassis running ROS2, this project combines real-time
+SLAM-based mapping and localization with a separate, real-time monocular depth
+estimation pipeline — giving the robot both a live map of its environment and a
+sense of depth from a single standard webcam, no LiDAR or stereo rig required for
+the vision component.
 
-## What is included
+## What it does
 
-- Gazebo-ready differential-drive robot model built from simple xacro geometry
-- SLAM Toolbox configuration for online asynchronous mapping
-- Nav2 configuration for autonomous path planning and obstacle avoidance
-- frontier-based exploration node that sends Nav2 goals into unknown space
-- velocity safety supervisor that filters unsafe commands using LiDAR ranges
-- map quality monitor that reports explored, free, occupied, and unknown map ratios
-- scan watchdog for basic LiDAR health monitoring
-- simulation and full-stack launch files
+- **Autonomous mapping & localization** — uses `slam_toolbox` on ROS2 to build a
+  live occupancy grid map as the robot explores an environment, with real-time
+  pose tracking and loop closure, visualized in RViz.
+- **Real-time monocular depth estimation** — runs Depth Anything V2
+  on a live camera feed to generate per-pixel relative depth, rendered as a color-mapped
+  overlay in real time (~35-40 FPS).
+- **Manual teleoperation** — drive the robot directly via keyboard using `key_teleop`.
 
-## Packages
+## Architecture
 
-```text
-sentinel_slam_ws/
-└── src/
-    ├── sentinel_description/   # robot model, world, visualisation launch
-    ├── sentinel_autonomy/      # exploration, safety, and monitoring nodes
-    └── sentinel_bringup/       # integrated SLAM/Nav2/simulation launch configs
-```
+Compute is split across two devices to work around the Raspberry Pi's limited
+horsepower for running a depth model:
 
-## Quick start
+Raspberry Pi (camera capture, ROS2 stack, slam_toolbox, motor control)
+        |
+        |  Flask video stream (http://<pi-ip>:5000/video)
+        v
+Host Machine / Mac (Depth Anything V2, runs on GPU/MPS, live HUD overlay)
 
-```bash
-cd sentinel_slam_ws
-colcon build --symlink-install
-source install/setup.bash
-ros2 launch sentinel_bringup sim_slam_nav.launch.py
-```
+The Pi handles robot control, SLAM, and camera streaming. Depth inference runs
+on a separate machine with GPU acceleration, pulling frames from the Pi over the
+local network, so depth estimation runs at real-time speed without being bottlenecked
+by the Pi's onboard compute.
 
-Start autonomous exploration in a second terminal:
+## Tech stack
 
-```bash
-source sentinel_slam_ws/install/setup.bash
-ros2 launch sentinel_autonomy autonomy_tools.launch.py explore:=true
-```
+- **Robot / SLAM**: ROS2, slam_toolbox, RViz, key_teleop
+- **Depth vision**: Depth Anything V2 (small model), PyTorch, Hugging Face transformers, OpenCV
+- **Streaming**: Flask (camera feed served from the Pi)
+- **Hardware**: 3D-printed TurtleBot chassis, Raspberry Pi, standard USB webcam
 
-## Why this is stronger
+## Running it
 
-- clear separation between robot description, autonomy logic, and system bringup
-- no dependency on custom mesh files for the base robot model
-- safety supervisor can sit between manual/autonomy commands and `/cmd_vel`
-- exploration and map-quality monitoring provide visible progress metrics
-- configs are grouped in one bringup package for easier deployment
+On the Raspberry Pi — start the camera stream:
 
-## Hardware assumptions
+    source ~/depth_env/bin/activate
+    python3 pi_stream.py
 
-- ROS 2 Humble or newer
-- differential-drive base
-- 2D laser scanner publishing `sensor_msgs/LaserScan`
-- optional IMU publishing `sensor_msgs/Imu`
-- Nav2 and SLAM Toolbox installed
+On the host machine — run the depth vision HUD (point it at the Pi's stream URL):
 
+    source ~/depth_env/bin/activate
+    python3 depth_mac_final.py
+
+For SLAM mapping (on the Pi, in a separate terminal):
+
+    source ~/sentinel_slam_ws/install/setup.bash
+    ros2 launch sentinel_bringup sim_slam_nav.launch.py
+
+For manual driving:
+
+    ros2 run key_teleop key_teleop
+
+## Status
+
+Actively being extended — next up is ArUco marker-based relocalization, so the
+robot can re-establish its position on the map after losing tracking.
+
+## Notes
+
+Depth Anything V2 produces relative depth (not calibrated real-world distance),
+so depth values are useful for comparison/thresholding within a scene but should
+not be treated as precise metric measurements.
