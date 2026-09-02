@@ -1,74 +1,88 @@
-# SENTINEL-SLAM
+# 🕷️ SENTINEL-SLAM
 
-Autonomous SLAM robot with real-time monocular depth vision.
+**A LiDAR-mapping rover that also sees depth through a plain webcam — no LiDAR needed for that part.**
 
-Built on a 3D-printed TurtleBot chassis running ROS2, this project combines real-time
-SLAM-based mapping and localization with a separate, real-time monocular depth
-estimation pipeline — giving the robot both a live map of its environment and a
-sense of depth from a single standard webcam, no LiDAR or stereo rig required for
-the vision component.
+Most SLAM rovers stop at "here's the map." This one also runs a real-time
+monocular depth estimation pipeline alongside the mapping stack, and can
+find its way back home using ArUco markers if it ever loses track of where
+it is. Built, broken, and rebuilt with a small team over way too many late
+nights debugging a fried WiFi chip.
 
-## What it does
+## Why this exists
 
-- **Autonomous mapping & localization** — uses `slam_toolbox` on ROS2 to build a
-  live occupancy grid map as the robot explores an environment, with real-time
-  pose tracking and loop closure, visualized in RViz.
-- **Real-time monocular depth estimation** — runs Depth Anything V2
-  on a live camera feed to generate per-pixel relative depth, rendered as a color-mapped
-  overlay in real time (~35-40 FPS).
-- **Manual teleoperation** — drive the robot directly via keyboard using `key_teleop`.
+We wanted a rover that didn't just map a room — it should *understand* how
+far things are, live, from a single cheap camera. Stereo rigs and depth
+cameras are expensive and finicky. So instead: LiDAR handles the mapping,
+and a separate depth model (Depth Anything V2) running on a beefier machine
+handles per-pixel depth in real time, streamed live off the robot.
 
-## Architecture
+## What it actually does
 
-Compute is split across two devices to work around the Raspberry Pi's limited
-horsepower for running a depth model:
+- 🗺️ **Live SLAM + navigation** — `slam_toolbox` + Nav2 build and update an
+  occupancy grid as the robot explores, with loop closure and autonomous
+  exploration, all watchable in RViz.
+- 🎯 **IMU sensor fusion** — the map used to warp because of how the LiDAR
+  was mounted. Fixed it by fusing IMU data in.
+- 👁️ **Real-time monocular depth** — Depth Anything V2 chews on a live
+  camera feed and spits out a color-mapped depth overlay at ~35-40 FPS,
+  running on a GPU/MPS host so the Pi doesn't choke.
+- 📍 **ArUco relocalization** — lose tracking, spot a marker, and the robot
+  re-anchors itself on the map instead of just being lost forever.
+- 🎮 **Manual override** — drive it straight from the keyboard when you just
+  want to mess around.
 
-Raspberry Pi (camera capture, ROS2 stack, slam_toolbox, motor control)
-        |
-        |  Flask video stream (http://<pi-ip>:5000/video)
-        v
-Host Machine / Mac (Depth Anything V2, runs on GPU/MPS, live HUD overlay)
+## How it's wired together
 
-The Pi handles robot control, SLAM, and camera streaming. Depth inference runs
-on a separate machine with GPU acceleration, pulling frames from the Pi over the
-local network, so depth estimation runs at real-time speed without being bottlenecked
-by the Pi's onboard compute.
+The Raspberry Pi is the workhorse for control — camera capture, the full
+ROS2 stack, SLAM, Nav2, motors. But depth models are hungry, and the Pi
+just doesn't have the muscle for real-time inference. So the camera feed
+gets streamed off the Pi over Flask, and a separate host machine with a
+real GPU does the depth math and renders the HUD.
 
-## Tech stack
+    Raspberry Pi  --(Flask video stream)-->  Host Machine
+    camera, ROS2, SLAM,   http://<pi-ip>:5000/video   Depth Anything V2,
+    Nav2, motor control                               GPU/MPS, live HUD
 
-- **Robot / SLAM**: ROS2, slam_toolbox, RViz, key_teleop
-- **Depth vision**: Depth Anything V2 (small model), PyTorch, Hugging Face transformers, OpenCV
-- **Streaming**: Flask (camera feed served from the Pi)
-- **Hardware**: 3D-printed TurtleBot chassis, Raspberry Pi, standard USB webcam
+## Stack
+
+| Layer | Tools |
+|---|---|
+| SLAM / Nav | ROS2, slam_toolbox, Nav2, RViz |
+| Sensors | LiDAR, IMU |
+| Depth vision | Depth Anything V2 (small), PyTorch, HF Transformers, OpenCV |
+| Streaming | Flask |
+| Hardware | Raspberry Pi 4, Arduino Nano, L298 motor driver |
 
 ## Running it
 
-On the Raspberry Pi — start the camera stream:
+**On the Pi** — kick off the camera stream:
 
     source ~/depth_env/bin/activate
     python3 pi_stream.py
 
-On the host machine — run the depth vision HUD (point it at the Pi's stream URL):
+**On the host machine** — run the depth HUD, pointed at the Pi's stream:
 
     source ~/depth_env/bin/activate
     python3 depth_mac_final.py
 
-For SLAM mapping (on the Pi, in a separate terminal):
+**SLAM + navigation** (on the Pi, separate terminal):
 
     source ~/sentinel_slam_ws/install/setup.bash
     ros2 launch sentinel_bringup sim_slam_nav.launch.py
 
-For manual driving:
+**Autonomous exploration:**
+
+    ros2 launch sentinel_autonomy autonomy_tools.launch.py explore:=true
+
+**Manual driving:**
 
     ros2 run key_teleop key_teleop
 
-## Status
+## Heads up
 
-Actively being extended — next up is ArUco marker-based relocalization, so the
-robot can re-establish its position on the map after losing tracking.
+Depth Anything V2 gives *relative* depth, not calibrated real-world
+distance — great for "is this closer than that," not for "this is exactly
+1.4 meters away."
 
-## Notes
-
-Depth Anything V2 produces relative depth (not calibrated real-world distance),
-so depth values are useful for comparison/thresholding within a scene but should
-not be treated as precise metric measurements.
+---
+Built by a small team, one debugging session at a time. 🛠️
