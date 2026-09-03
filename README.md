@@ -84,5 +84,8 @@ Depth Anything V2 gives *relative* depth, not calibrated real-world
 distance — great for "is this closer than that," not for "this is exactly
 1.4 meters away."
 
+## Credits
+
+Chassis URDF and mesh files adapted from [ROBOTIS TurtleBot3](https://github.com/ROBOTIS-GIT/turtlebot3) (Apache 2.0 License), with an added second base plate for our physical build.
+
 ---
-Built by a small team, one debugging session at a time. 🛠️
