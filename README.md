@@ -1,8 +1,8 @@
 # 🕷️ SENTINEL-SLAM
 
-**A LiDAR-mapping rover that also sees depth through a plain webcam — no LiDAR needed for that part.**
+**A LiDAR-mapping robot that also sees depth through a plain webcam — no LiDAR needed for that part.**
 
-Most SLAM rovers stop at "here's the map." This one also runs a real-time
+Most SLAM robots stop at "here's the map." This one also runs a real-time
 monocular depth estimation pipeline alongside the mapping stack, and can
 find its way back home using ArUco markers if it ever loses track of where
 it is. Built, broken, and rebuilt with a small team over way too many late
@@ -10,7 +10,7 @@ nights debugging a fried WiFi chip.
 
 ## Why this exists
 
-We wanted a rover that didn't just map a room — it should *understand* how
+We wanted a robot that didn't just map a room — it should *understand* how
 far things are, live, from a single cheap camera. Stereo rigs and depth
 cameras are expensive and finicky. So instead: LiDAR handles the mapping,
 and a separate depth model (Depth Anything V2) running on a beefier machine
@@ -42,6 +42,18 @@ real GPU does the depth math and renders the HUD.
     Raspberry Pi  --(Flask video stream)-->  Host Machine
     camera, ROS2, SLAM,   http://<pi-ip>:5000/video   Depth Anything V2,
     Nav2, motor control                               GPU/MPS, live HUD
+
+## Hardware Components
+
+| Component | Purpose |
+|---|---|
+| Raspberry Pi 4 | Onboard compute, ROS 2 nodes, motor control |
+| 2D LiDAR | Environment scanning for SLAM |
+| MPU6050 IMU | Orientation feedback, sensor fusion |
+| Zebronics Webcam | Camera feed for monocular depth estimation |
+| 25GA-370 DC Geared Motor with Encoder | Drive motors with encoder feedback for odometry |
+| Arduino Nano / L298N | Motor driver interface |
+| Mac (GPU host) | Runs Depth Anything V2 inference for real-time depth estimation |
 
 ## Stack
 
@@ -87,5 +99,3 @@ distance — great for "is this closer than that," not for "this is exactly
 ## Credits
 
 Chassis URDF and mesh files adapted from [ROBOTIS TurtleBot3](https://github.com/ROBOTIS-GIT/turtlebot3) (Apache 2.0 License), with an added second base plate for our physical build.
-
----
