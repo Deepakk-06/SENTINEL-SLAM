@@ -48,7 +48,7 @@ real GPU does the depth math and renders the HUD.
 | Component | Purpose |
 |---|---|
 | Raspberry Pi 4 | Onboard compute, ROS 2 nodes, motor control |
-| 2D LiDAR | Environment scanning for SLAM |
+| RPLiDAR A1 (12m range) | Environment scanning for SLAM |
 | MPU6050 IMU | Orientation feedback, sensor fusion |
 | Zebronics Webcam | Camera feed for monocular depth estimation |
 | 25GA-370 DC Geared Motor with Encoder | Drive motors with encoder feedback for odometry |
