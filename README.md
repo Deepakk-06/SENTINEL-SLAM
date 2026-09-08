@@ -53,6 +53,9 @@ real GPU does the depth math and renders the HUD.
 | Zebronics Webcam | Camera feed for monocular depth estimation |
 | 25GA-370 DC Geared Motor with Encoder | Drive motors with encoder feedback for odometry |
 | Arduino Nano / L298N | Motor driver interface |
+| WAGO 221-Series Lever Connectors (5-way) | Wiring connections between components |
+| Bonka 2200mAh 3S1P 11.1V LiPo Battery | Main power source |
+| XL4015 5A Buck Converter | Steps down LiPo voltage to power the Pi/electronics |
 | Mac (GPU host) | Runs Depth Anything V2 inference for real-time depth estimation |
 
 ## Stack
@@ -99,3 +102,6 @@ distance — great for "is this closer than that," not for "this is exactly
 ## Credits
 
 Chassis URDF and mesh files adapted from [ROBOTIS TurtleBot3](https://github.com/ROBOTIS-GIT/turtlebot3) (Apache 2.0 License), with an added second base plate for our physical build.
+
+---
+Built by a small team, one debugging session at a time. 🛠️
