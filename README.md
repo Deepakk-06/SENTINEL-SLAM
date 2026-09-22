@@ -1,3 +1,5 @@
+![SENTINEL-SLAM](ss1.jpg)
+
 # 🕷️ SENTINEL-SLAM
 
 **A LiDAR-mapping robot that also sees depth through a plain webcam — no LiDAR needed for that part.**
@@ -116,7 +118,3 @@ Chassis URDF and mesh files adapted from [ROBOTIS TurtleBot3](https://github.com
 
 ---
 Built by a small team, one debugging session at a time. 🛠️
-
-## 📸 Preview
-
-![SENTINEL-SLAM](ss1.jpg)
