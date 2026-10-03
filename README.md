@@ -1,7 +1,3 @@
-  echo "STOP: could not clone https://github.com/$OWNER/$REPO, check the owner and repo name"
-else
-cd ss-edit
-cat > README.md <<'EOF'
 <div align="center">
 
 ![SENTINEL-SLAM](ss1.jpg)
