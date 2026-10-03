@@ -1,7 +1,3 @@
-OWNER="Deepakk-06"
-REPO="sentinel-slam"
-cd ~/Desktop && rm -rf ss-edit
-if ! git clone -q https://github.com/$OWNER/$REPO.git ss-edit; then
   echo "STOP: could not clone https://github.com/$OWNER/$REPO, check the owner and repo name"
 else
 cd ss-edit
@@ -157,11 +153,3 @@ Chassis URDF and mesh files adapted from
 **Built by a small team, one debugging session at a time.** 🛠️
 
 </div>
-EOF
-echo "--- files in repo ---"; ls
-git add README.md
-if git diff --cached --quiet; then echo "NOTHING TO CHANGE"
-else git commit -qm "Rewrite README with diagrams and badges" && git push -q origin main && echo "DONE: README pushed"
-fi
-cd ~/Desktop && rm -rf ss-edit
-fi
